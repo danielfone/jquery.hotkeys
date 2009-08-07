@@ -39,7 +39,7 @@ Note:
     
     var hotkeys = {
         version: '0.7.9',
-        override: /keypress|keydown|keyup/g,
+        override: /keypress(\.\w+)?|keydown(\.\w+)?|keyup(\.\w+)?/g,
         triggersMap: {},
         
         specialKeys: { 27: 'esc', 9: 'tab', 32:'space', 13: 'return', 8:'backspace', 145: 'scroll', 
@@ -86,11 +86,14 @@ Note:
             var selectorId = ((this.prevObject && this.prevObject.query) || (this[0].id && this[0].id) || this[0]).toString();
             var hkTypes = type.split(' ');
             for (var x=0; x<hkTypes.length; x++){
-                delete hotkeys.triggersMap[selectorId][hkTypes[x]][combi];
+                var eventType = hkTypes[x].split('.')[0];
+                delete hotkeys.triggersMap[selectorId][eventType][combi];
             }
         }
         // call jQuery original unbind
-        return  this.__unbind__(type, fn);
+        if (jQuery.isFunction(fn) || !combi ){
+          return  this.__unbind__(type, fn);
+        }
     };
     
     jQuery.fn.bind = function(type, data, fn){
@@ -117,7 +120,7 @@ Note:
             }
             if(data.combi){
                 for (var x=0; x < handle.length; x++){
-                    var eventType = handle[x];
+                    var eventType = handle[x].split('.')[0];
                     var combi = data.combi.toLowerCase(),
                         trigger = hotkeys.newTrigger(eventType, combi, fn),
                         selectorId = ((this.prevObject && this.prevObject.query) || (this[0].id && this[0].id) || this[0]).toString();
